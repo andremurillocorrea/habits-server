@@ -2,7 +2,7 @@
   "name": "habits-server",
   "version": "1.0.0",
   "scripts": {
-    "build": "prisma migrate deploy",
+    "build": "prisma generate && prisma migrate deploy",
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts"
   },
