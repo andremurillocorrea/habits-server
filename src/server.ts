@@ -2,7 +2,9 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { appRoutes } from './routes'
 
-const app = Fastify()
+const app = Fastify({
+    logger: true
+})
 
 app.register(cors)
 app.register(appRoutes)

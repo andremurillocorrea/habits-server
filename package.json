@@ -1,9 +1,8 @@
 {
-  "name": "server",
+  "name": "habits-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
+    "build": "prisma migrate deploy",
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts"
   },
