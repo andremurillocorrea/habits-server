@@ -1,8 +1,7 @@
-import dayjs from 'dayjs'
+import dayjs from './lib/dayjs'
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from "./lib/prisma"
-
 
 export async function appRoutes(app: FastifyInstance) {
   app.post('/habits', async (request) => {
@@ -15,7 +14,7 @@ export async function appRoutes(app: FastifyInstance) {
 
     const { title, weekDays } = createHabitBody.parse(request.body)
 
-    const today = dayjs().startOf('day').toDate()
+    const today = dayjs.utc().toDate()
 
     await prisma.habit.create({
       data: {
@@ -40,14 +39,16 @@ export async function appRoutes(app: FastifyInstance) {
 
     const { date } = getDayParams.parse(request.query)
 
-    const parsedDate = dayjs(date).startOf('day')
+    const initialDate = dayjs(date)
 
-    const weekDay = parsedDate.get('day')
+    const endDate = initialDate.add(1, 'day').toDate()
+
+    const weekDay = initialDate.get('day')
 
     const possibleHabits = await prisma.habit.findMany({
       where: {
         created_at: {
-          lte: date,
+          lt: endDate,
         },
         weekDays: {
           some: {
@@ -59,7 +60,7 @@ export async function appRoutes(app: FastifyInstance) {
 
     const day = await prisma.day.findUnique({
       where: {
-        date: parsedDate.toDate()
+        date: initialDate.toDate()
       },
       include: {
         dayHabits: true
@@ -83,8 +84,6 @@ export async function appRoutes(app: FastifyInstance) {
     })
 
     const { id, date } = toggleHabitParams.parse(request.params)
-
-    // const today = dayjs().startOf('day').toDate()
 
     let day = await prisma.day.findUnique({
       where: {
@@ -146,7 +145,7 @@ export async function appRoutes(app: FastifyInstance) {
           WHERE 
             -- HWD.week_day = cast(strftime('%w', D.date / 1000.0, 'unixepoch') as int)
             HWD.week_day = (to_char(D.date, 'D')::int - 1)
-            AND H.created_at <= D.date
+            AND H.created_at <= (D.date + interval '10 day')
         ) as amount
       FROM days D
     `
