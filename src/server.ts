@@ -2,6 +2,10 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { appRoutes } from './routes'
 
+import dayjs from './lib/dayjs'
+
+console.log(`Timezone: ${dayjs.tz.guess()}`)
+
 const app = Fastify({
     logger: true
 })

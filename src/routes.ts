@@ -15,7 +15,8 @@ export async function appRoutes(app: FastifyInstance) {
 
     const { title, weekDays } = createHabitBody.parse(request.body)
 
-    const today = dayjs.utc().toDate()
+    // const today = dayjs.utc().toDate()
+    const today = dayjs().toDate()
 
     await prisma.habit.create({
       data: {
@@ -145,7 +146,8 @@ export async function appRoutes(app: FastifyInstance) {
             ON H.id = HWD.habit_id
           WHERE 
             -- HWD.week_day = cast(strftime('%w', D.date / 1000.0, 'unixepoch') as int)
-            HWD.week_day = (to_char(D.date, 'D')::int - 1)
+            -- HWD.week_day = (to_char(D.date, 'D')::int - 1)
+            HWD.week_day = EXTRACT (DOW FROM D.date AT TIME ZONE 'America/Sao_Paulo')
             -- AND H.created_at <= (D.date + interval '10 day')
             AND H.created_at <= D.date
         ) as amount
@@ -181,6 +183,8 @@ export async function appRoutes(app: FastifyInstance) {
 
     const consecutiveHabits = habits.map(habit => {
 
+      const today = dayjs()
+
       let dayIterator = dayjs()
 
       const weekdayList = habit['weekDays'].map(weekDay => weekDay.week_day)
@@ -209,6 +213,8 @@ export async function appRoutes(app: FastifyInstance) {
 
           if (isDayChecked) {
             countConsecutiveDays += 1
+          } else if (dayIterator.isSame(today)) {
+            // se for o primeiro dia, não reseta porque o dia ainda não fechou e ainda dá tempo de fazer o hábito
           } else {
             break
           }
